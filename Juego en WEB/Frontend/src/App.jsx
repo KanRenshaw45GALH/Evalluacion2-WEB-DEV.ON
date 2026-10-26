@@ -14,6 +14,16 @@ function App() {
   const [cargando, setCargando] = useState(false);
   const [historialGlobal, setHistorialGlobal] = useState([]);
 
+ //Pantalla de inicio y pantalla de reglas del juego
+  const [pantallaInicio, setpantallaInicio] = useState(true);
+  const[reglasJuego, setreglasJuego] = useState(false);
+
+  //Transicion de pantalla de inicio al juego
+  const comenzarJuego = () => {
+    setpantallaInicio(false);
+    iniciarPartida();
+  };
+
   // Iniciar o reiniciar una partida mediante Express.
   const iniciarPartida = useCallback(async () => {
     setCargando(true);
