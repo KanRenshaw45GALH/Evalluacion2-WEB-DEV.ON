@@ -209,6 +209,58 @@ function App() {
           : "";
 
   const progreso = Math.max(0, Math.min(100, tiempo * 10));
+
+  // Pantalla de inicio y reglas del juego
+if(pantallaInicio){
+  return(
+    <main className="reactor-page">
+        <div className="ambient ambient-one" />
+        <div className="ambient ambient-two" />
+
+        <section className="intro text-center my-5">
+          <p className="eyebrow">SISTEMA DE CONTENCIÓN TÉRMICA</p>
+          <h1>REACTOR<span> CORE</span></h1>
+          <p className="lead my-3">
+            Bienvenido, Operador. Debes calibrar la temperatura exacta del reactor antes de que ocurra una catástrofe.
+          </p>
+
+          <div className="my-4" style={{ maxWidth: "400px", margin: "0 auto" }}>
+            <label htmlFor="nombreInicio">IDENTIFICACIÓN DEL OPERADOR:</label>
+            <input
+              id="nombreInicio"
+              className="reactor-input my-2 text-center"
+              value={nombre}
+              onChange={(e) => setNombre(e.target.value)}
+              placeholder="Ingresa tu nombre o código"
+              maxLength={50}
+            />
+          </div>
+
+          <div className="d-flex justify-content-center gap-3 mt-4">
+            <button className="primary-button" onClick={comenzarJuego}>
+              🚀 INICIAR SECUENCIA DE ESTABILIZACIÓN
+            </button>
+            <button className="secondary-button" onClick={() => setReglasJuego(!reglasJuego)}>
+              📜 {reglasJuego ? "OCULTAR REGLAS" : "MOSTRAR REGLAS DEL JUEGO"}
+            </button>
+          </div>
+        </section>
+        {reglasJuego && (
+          <section className="panel my-4" style={{ maxWidth: "600px", margin: "0 auto" }}>
+            <h3>Reglas del juego</h3>
+            <ul className="mt-3 text-start">
+              <li>El núcleo genera una <strong>temperatura secreta entre 1 y 100 °C</strong>.</li>
+              <li>Tienes un máximo de <strong>3 intentos</strong> para adivinar el número exacto.</li>
+              <li>Cada intento tiene un tiempo límite de <strong>10 segundos</strong>.</li>
+              <li>Si seleccionas un valor erróneo, la consola te guiará indicando si la temperatura ideal es <em>más alta</em> o <em>más baja</em>.</li>
+              <li>Si se agotan los intentos o el tiempo llega a 0, <strong>¡EL REACTOR EXPLOTARÁ!</strong></li>
+            </ul>
+          </section>
+        )}
+      </main>
+  );
+}
+
   return (
     <main className="reactor-page">
       <div className="ambient ambient-one" />
