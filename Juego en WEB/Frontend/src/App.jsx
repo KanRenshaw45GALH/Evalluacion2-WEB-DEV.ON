@@ -20,13 +20,15 @@ function App() {
 
   //Transicion de pantalla de inicio al juego
   const comenzarJuego = async () => {
+  if(!nombre.trim()){
+    setMensaje("Por favor ingresa tu nombre")
+    return;
+  }
   if (cargando) return;
-    const iniciada = await iniciarPartida();
-    if (iniciada) {
-      setPantallaInicio(false);
-    }
-  };
 
+  await iniciarPartida();
+  setPantallaInicio(false);
+  };
 
   // Iniciar o reiniciar una partida mediante Express.
   const iniciarPartida = async () => {
@@ -237,6 +239,11 @@ function App() {
               placeholder="Ingresa tu nombre o código"
               maxLength={50}
             />
+            {mensaje && !nombre.trim() && (
+              <p style={{ color: "#ff4d4d", fontSize: "0.9rem", marginTop: "8px" }}>
+                {mensaje}
+              </p>
+            )}
           </div>
 
           <div className="d-flex justify-content-center gap-3 mt-4">
