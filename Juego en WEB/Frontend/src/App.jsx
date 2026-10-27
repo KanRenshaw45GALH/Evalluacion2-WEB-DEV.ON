@@ -19,10 +19,14 @@ function App() {
   const [reglasJuego, setReglasJuego] = useState(false);
 
   //Transicion de pantalla de inicio al juego
-  const comenzarJuego = () => {
-    setPantallaInicio(false);
-    iniciarPartida();
+  const comenzarJuego = async () => {
+  if (cargando) return;
+    const iniciada = await iniciarPartida();
+    if (iniciada) {
+      setPantallaInicio(false);
+    }
   };
+
 
   // Iniciar o reiniciar una partida mediante Express.
   const iniciarPartida = async () => {
@@ -49,23 +53,21 @@ function App() {
       setEstado("jugando");
       setMensaje(data.mensaje);
       setTemperatura("");
+      setPartida(null);
+      setEstado("jugando");
+      setMensaje(data.mensaje);
+      setTemperatura("");
+          return true;
     } catch (error) {
       setEstado("error");
       setMensaje(error.message || "No se pudo conectar con Express.");
+      return false;
     } finally {
       setCargando(false);
     }
   };
 
   // Iniciar una partida al abrir la página.
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      iniciarPartida();
-    }, 0);
-    return () => clearTimeout(timer);
-    // Solo se ejecuta al montar el componente.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   // Consultar periódicamente el estado real del backend.
   useEffect(() => {
