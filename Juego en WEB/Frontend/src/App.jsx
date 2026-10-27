@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 const API = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 function App() {
@@ -14,18 +14,18 @@ function App() {
   const [cargando, setCargando] = useState(false);
   const [historialGlobal, setHistorialGlobal] = useState([]);
 
- //Pantalla de inicio y pantalla de reglas del juego
-  const [pantallaInicio, setpantallaInicio] = useState(true);
-  const[reglasJuego, setreglasJuego] = useState(false);
+  //Pantalla de inicio y pantalla de reglas del juego
+  const [pantallaInicio, setPantallaInicio] = useState(true);
+  const [reglasJuego, setReglasJuego] = useState(false);
 
   //Transicion de pantalla de inicio al juego
   const comenzarJuego = () => {
-    setpantallaInicio(false);
+    setPantallaInicio(false);
     iniciarPartida();
   };
 
   // Iniciar o reiniciar una partida mediante Express.
-  const iniciarPartida = useCallback(async () => {
+  const iniciarPartida = async () => {
     setCargando(true);
 
     try {
@@ -55,18 +55,21 @@ function App() {
     } finally {
       setCargando(false);
     }
-  }, [nombre]);
+  };
 
   // Iniciar una partida al abrir la página.
   useEffect(() => {
-    iniciarPartida();
+    const timer = setTimeout(() => {
+      iniciarPartida();
+    }, 0);
+    return () => clearTimeout(timer);
     // Solo se ejecuta al montar el componente.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Consultar periódicamente el estado real del backend.
   useEffect(() => {
-    if (estado !== "jugando") return;
+    if (estado !== "jugando" || pantallaInicio) return;
     let activo = true;
     const consultarEstado = async () => {
       try {
@@ -97,11 +100,11 @@ function App() {
       activo = false;
       clearInterval(intervalo);
     };
-  }, [estado]);
+  }, [estado, pantallaInicio]);
 
   // Mantener el contador visual sincronizado con la fecha límite.
   useEffect(() => {
-    if (estado !== "jugando" || !limite) return;
+    if (estado !== "jugando" || !limite || pantallaInicio) return;
     const actualizarTiempo = () => {
       setTiempo(
         Math.max(0, Math.ceil((limite - Date.now()) / 1000))
@@ -110,9 +113,8 @@ function App() {
     actualizarTiempo();
     const intervalo = setInterval(actualizarTiempo, 100);
     return () => clearInterval(intervalo);
-  }, [estado, limite]);
+  }, [estado, limite, pantallaInicio]);
 
-  
   // Consultar el historial global de partidas.
   useEffect(() => {
     let activo = true;
@@ -144,7 +146,6 @@ function App() {
       clearInterval(intervalo);
     };
   }, []);
-
 
   // Enviar una temperatura al backend.
   async function enviarIntento(event) {
@@ -211,9 +212,9 @@ function App() {
   const progreso = Math.max(0, Math.min(100, tiempo * 10));
 
   // Pantalla de inicio y reglas del juego
-if(pantallaInicio){
-  return(
-    <main className="reactor-page">
+  if (pantallaInicio) {
+    return (
+      <main className="reactor-page">
         <div className="ambient ambient-one" />
         <div className="ambient ambient-two" />
 
@@ -238,13 +239,14 @@ if(pantallaInicio){
 
           <div className="d-flex justify-content-center gap-3 mt-4">
             <button className="primary-button" onClick={comenzarJuego}>
-              🚀 INICIAR SECUENCIA DE ESTABILIZACIÓN
+              INICIAR SECUENCIA DE ESTABILIZACIÓN
             </button>
-            <button className="secondary-button" onClick={() => setReglasJuego(!reglasJuego)}>
-              📜 {reglasJuego ? "OCULTAR REGLAS" : "MOSTRAR REGLAS DEL JUEGO"}
+            <button className="primary-button" onClick={() => setReglasJuego(!reglasJuego)}>
+              {reglasJuego ? "OCULTAR LAS REGLAS" : "MOSTRAR REGLAS DEL JUEGO"}
             </button>
           </div>
         </section>
+
         {reglasJuego && (
           <section className="panel my-4" style={{ maxWidth: "600px", margin: "0 auto" }}>
             <h3>Reglas del juego</h3>
@@ -253,18 +255,44 @@ if(pantallaInicio){
               <li>Tienes un máximo de <strong>3 intentos</strong> para adivinar el número exacto.</li>
               <li>Cada intento tiene un tiempo límite de <strong>10 segundos</strong>.</li>
               <li>Si seleccionas un valor erróneo, la consola te guiará indicando si la temperatura ideal es <em>más alta</em> o <em>más baja</em>.</li>
-              <li>Si se agotan los intentos o el tiempo llega a 0, <strong>¡EL REACTOR EXPLOTARÁ!</strong></li>
+              <li>Si se agotan los intentos o el tiempo llega a 0, <strong>el reactor explotará</strong>.</li>
             </ul>
           </section>
         )}
       </main>
-  );
-}
+    );
+  }
 
   return (
     <main className="reactor-page">
       <div className="ambient ambient-one" />
       <div className="ambient ambient-two" />
+
+      {/* Pantalla de alerta de explosion */}
+      {estado === "derrota" && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
+          backgroundColor: "rgba(20, 0, 0, 0.94)", zIndex: 9999,
+          display: "flex", flexDirection: "column", justifyContent: "center",
+          alignItems: "center", color: "#ff4d4d", textAlign: "center", padding: "20px"
+        }}>
+          <h1 style={{ fontSize: "3rem", textShadow: "0 0 25px red" }}>¡El reactor explotó!</h1>
+          <p style={{ color: "#fff", fontSize: "1.2rem", maxWidth: "500px" }}>
+            Se ha perdido la contención del núcleo térmico. La temperatura secreta era de:
+            <strong style={{ color: "#ffcb2e", display: "block", fontSize: "2.2rem" }}>
+              {partida?.temperaturaSecreta ?? "--"} °C
+            </strong>
+          </p>
+          <div className="d-flex gap-3 mt-4">
+            <button className="primary-button" onClick={iniciarPartida}>
+              REINICIAR Y REINTENTAR
+            </button>
+            <button className="secondary-button" onClick={() => setPantallaInicio(true)}>
+              VOLVER AL MENÚ
+            </button>
+          </div>
+        </div>
+      )}
 
       <header className="topbar">
         <div className="brand-mark">R</div>
@@ -370,7 +398,7 @@ if(pantallaInicio){
               type="submit"
               disabled={estado !== "jugando" || cargando}
             >
-              {cargando ? "PROCESANDO..." : "↗ ESTABILIZAR REACTOR"}
+              {cargando ? "PROCESANDO..." : "ESTABILIZAR REACTOR"}
             </button>
           </form>
 
@@ -387,7 +415,7 @@ if(pantallaInicio){
             onClick={iniciarPartida}
             disabled={cargando}
           >
-            ↻ REINICIAR REACTOR
+            REINICIAR REACTOR
           </button>
         </article>
 
@@ -458,7 +486,7 @@ if(pantallaInicio){
 
           <p className="visual-caption">
             {tiempo <= 3 && estado === "jugando"
-              ? "⚠ NIVEL CRÍTICO DE CONTENCIÓN"
+              ? "NIVEL CRÍTICO DE CONTENCIÓN"
               : "UNIDAD DE CONTENCIÓN TÉRMICA"}
           </p>
         </article>
@@ -510,7 +538,6 @@ if(pantallaInicio){
             <p className="history-description">
               Todos los operadores que han intentado estabilizar el reactor.
             </p>
-            
           </div>
           <span className="history-count">
             {historialGlobal.length} PARTIDAS
@@ -606,8 +633,7 @@ if(pantallaInicio){
         </p>
       </section>
 
-      /////////////////////////////////////////////
-
+      {/* ///////////////////////////////////////////// */}
 
       <footer>
         <span>REACTOR CORE SYSTEMS</span>
