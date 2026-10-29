@@ -1,20 +1,17 @@
 {
-  "type": "module",
-"scripts": { "start": "node --watch server.js" },
   "name": "backend",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Backend AstroLogistics",
+  "type": "module",
+  "main": "App.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node --watch App.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
     "cors": "^2.8.6",
     "express": "^5.3.0"
   }
-  
 }
